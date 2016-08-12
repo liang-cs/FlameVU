@@ -87,18 +87,12 @@ bool ARManager::stop()
 bool ARManager::clear()
 {
 	bool status = true;
-	status &= stop();
-	std::cout << "1" << std::endl;
 	status &= augmenter_.detachCamera(camera_);
-	std::cout << "2" << std::endl;
+	status &= stop();
 	status &= camera_.close();
-	std::cout << "3" << std::endl;
 	camera_.clear();
-	std::cout << "4" << std::endl;
 	tracker_.clear();
-	std::cout << "5" << std::endl;
 	augmenter_.clear();
-	std::cout << "6" << std::endl;
 	return status;
 }
 EasyAR::Vec2I ARManager::imageSize() const

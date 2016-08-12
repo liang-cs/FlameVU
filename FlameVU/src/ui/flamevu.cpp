@@ -19,7 +19,5 @@ FlameVU::FlameVU(QWidget *parent)
 
 FlameVU::~FlameVU()
 {
-	std::cout << "8" << std::endl;
 	delete scene_widget_;
-	std::cout << "9" << std::endl;
 }

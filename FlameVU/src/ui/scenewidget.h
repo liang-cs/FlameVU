@@ -103,7 +103,7 @@ private:
 
 	std::ofstream debugInfo_;
 
-	ARManager ar_mananger_;
+	ARManager* ar_mananger_;
 	double last_time_stamp_;
 
 	GLuint tex_id_;

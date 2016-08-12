@@ -5,6 +5,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QCoreApplication>
+#include <QThread>
 #include <cmath>
 #include <opencv/cv.h>
 #include <easyar/base.hpp>
@@ -30,32 +31,50 @@ SceneWidget::SceneWidget(FlameVU *mw, bool button, const QColor &background)
 	blockSize.x = 16;
 	blockSize.y = 16;
 	capture_image_data_ = 0;
+	ar_mananger_ = 0;
 	debugInfo_.open("debug.txt");
 }
 
 SceneWidget::~SceneWidget()
 {
 	debugInfo_.close();
-	SAFE_DELETE_ARRAY(capture_image_data_);
 
 	// And now release all OpenGL resources.
 	makeCurrent();
 	//delete program;
 	doneCurrent();
+	SAFE_DELETE(ar_mananger_);
+	QThread::msleep(1000);
+	SAFE_DELETE_ARRAY(capture_image_data_);
 }
 
 void SceneWidget::initAR()
 {
-	ar_mananger_.setup();
-	ar_mananger_.initCamera();
-	bool status = ar_mananger_.loadFromJsonFile("data/target.json", "flame");
+	ar_mananger_ = new ARManager();
+
+	ar_mananger_->setup();
+	ar_mananger_->initCamera();
+	bool status = ar_mananger_->loadFromJsonFile("data/target.json", "flame");
 	if (!status)
 	{
 		std::cout << "failed while loading json file" << std::endl;
 	}
-	ar_mananger_.start();
+	ar_mananger_->start();
 	last_time_stamp_ = 0.0;
-	capture_image_data_ = new uchar[ar_mananger_.imageSize()[0] * ar_mananger_.imageSize()[1] * 3];
+	capture_image_data_ = new uchar[ar_mananger_->imageSize()[0] * ar_mananger_->imageSize()[1] * 3];
+
+	QThread::msleep(1000);
+
+	//ar_mananger_.setup();
+	//ar_mananger_.initCamera();
+	//bool status = ar_mananger_.loadFromJsonFile("data/target.json", "flame");
+	//if (!status)
+	//{
+	//	std::cout << "failed while loading json file" << std::endl;
+	//}
+	//ar_mananger_.start();
+	//last_time_stamp_ = 0.0;
+	//capture_image_data_ = new uchar[ar_mananger_.imageSize()[0] * ar_mananger_.imageSize()[1] * 3];
 
 }
 
@@ -203,7 +222,7 @@ void SceneWidget::resizeGL(int width, int height)
 
 void SceneWidget::updateAR()
 {
-	EasyAR::Frame frame = ar_mananger_.augmenter_.newFrame();
+	EasyAR::Frame frame = ar_mananger_->augmenter_.newFrame();
 	EasyAR::Image image = frame.images()[0];
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_LIGHTING);
@@ -267,19 +286,16 @@ void SceneWidget::updateAR()
 
 void SceneWidget::drawAR()
 {
-	EasyAR::Frame frame = ar_mananger_.augmenter_.newFrame();
+	EasyAR::Frame frame = ar_mananger_->augmenter_.newFrame();
 	EasyAR::AugmentedTarget::Status status = frame.targets()[0].status();
 
 
 	if (status == EasyAR::AugmentedTarget::kTargetStatusTracked)
 	{
 
-
-		EasyAR::Matrix44F projectionMatrix = EasyAR::getProjectionGL(ar_mananger_.camera_.cameraCalibration(), 0.2f, 500.f);
+		EasyAR::Matrix44F projectionMatrix = EasyAR::getProjectionGL(ar_mananger_->camera_.cameraCalibration(), 0.2f, 500.f);
 		EasyAR::Matrix44F cameraview = EasyAR::getPoseGL(frame.targets()[0].pose());
 		EasyAR::ImageTarget target = frame.targets()[0].target().cast_dynamic<EasyAR::ImageTarget>();
-
-
 
 
 		glPushMatrix();
@@ -319,7 +335,6 @@ void SceneWidget::drawAR()
 		glColor3f(0.0f, 0.0f, 1.0f);          // Blue
 		glVertex3f(1.0f, 1.0f, -1.0f);         // Right Of Triangle (Back)
 
-
 		glColor3f(1.0f, 0.0f, 0.0f);          // Red
 		glVertex3f(0.0f, 0.0f, 1.0f);          // Top Of Triangle (Left)
 		glColor3f(0.0f, 0.0f, 1.0f);          // Blue
@@ -327,86 +342,10 @@ void SceneWidget::drawAR()
 		glColor3f(0.0f, 1.0f, 0.0f);          // Green
 		glVertex3f(-1.0f, 1.0f, -1.0f);          // Right Of Triangle (Left)
 
-
-
-		//glColor3f(1.0f, 0.0f, 0.0f);          // Red
-		//glVertex3f(0.0f, 1.0f, 0.0f);          // Top Of Triangle (Front)
-		//glColor3f(0.0f, 1.0f, 0.0f);          // Green
-		//glVertex3f(-1.0f, -1.0f, 1.0f);          // Left Of Triangle (Front)
-		//glColor3f(0.0f, 0.0f, 1.0f);          // Blue
-		//glVertex3f(1.0f, -1.0f, 1.0f);          // Right Of Triangle (Front)
-
-		//glColor3f(1.0f, 0.0f, 0.0f);          // Red
-		//glVertex3f(0.0f, 1.0f, 0.0f);          // Top Of Triangle (Right)
-		//glColor3f(0.0f, 0.0f, 1.0f);          // Blue
-		//glVertex3f(1.0f, -1.0f, 1.0f);          // Left Of Triangle (Right)
-		//glColor3f(0.0f, 1.0f, 0.0f);          // Green
-		//glVertex3f(1.0f, -1.0f, -1.0f);         // Right Of Triangle (Right)
-
-		//glColor3f(1.0f, 0.0f, 0.0f);          // Red
-		//glVertex3f(0.0f, 1.0f, 0.0f);          // Top Of Triangle (Back)
-		//glColor3f(0.0f, 1.0f, 0.0f);          // Green
-		//glVertex3f(1.0f, -1.0f, -1.0f);         // Left Of Triangle (Back)
-		//glColor3f(0.0f, 0.0f, 1.0f);          // Blue
-		//glVertex3f(-1.0f, -1.0f, -1.0f);         // Right Of Triangle (Back)
-
-
-		//glColor3f(1.0f, 0.0f, 0.0f);          // Red
-		//glVertex3f(0.0f, 1.0f, 0.0f);          // Top Of Triangle (Left)
-		//glColor3f(0.0f, 0.0f, 1.0f);          // Blue
-		//glVertex3f(-1.0f, -1.0f, -1.0f);          // Left Of Triangle (Left)
-		//glColor3f(0.0f, 1.0f, 0.0f);          // Green
-		//glVertex3f(-1.0f, -1.0f, 1.0f);          // Right Of Triangle (Left)
 		glEnd();                        // Done Drawing The Pyramid
 
 
-
-#if 0
-		GLdouble x, y, z; // target 2d coords (z is 'unused')
-		GLdouble coords0[] = { .0, .0, 10.0 }; // current 3d coords
-		GLdouble coords1[] = { 1.0, .0, 10.0 }; // current 3d coords
-		GLdouble coords2[] = { 1.0, 1.0, 10.0 }; // current 3d coords
-		GLdouble coords3[] = { .0, 1.0, 10.0 }; // current 3d coords
-
-		GLdouble model_view[16];
-		glGetDoublev(GL_MODELVIEW_MATRIX, model_view);
-
-		GLdouble projection[16];
-		glGetDoublev(GL_PROJECTION_MATRIX, projection);
-
-		GLint viewport[4];
-		glGetIntegerv(GL_VIEWPORT, viewport);
-
-		// get window coords based on 3D coordinates
-		gluProject(0., 0., 10.,
-			model_view, projection, viewport,
-			coords0, coords0 + 1 , coords0 + 2);
-		gluProject(1., 0., 10.,
-			model_view, projection, viewport,
-			coords1, coords1 + 1 , coords1 + 2);
-		gluProject(1., 1., 10.,
-			model_view, projection, viewport,
-			coords2, coords2 + 1 , coords2 + 2);
-		gluProject(0., 1., 10.,
-			model_view, projection, viewport,
-			coords3, coords3 + 1 , coords3 + 2);
-
-		glFlush();
-#endif
-
 		glPopMatrix();
-
-		//glMatrixMode(GL_PROJECTION);
-		//glLoadIdentity();
-		//glOrtho(0, this->width(), 0, this->height(), -100, 100);
-		//glMatrixMode(GL_MODELVIEW);
-		//glLoadIdentity();
-		//glColor3d(0, 1, 0);
-		//glBegin(GL_TRIANGLES);
-		//glVertex3d(coords0[0], coords0[1], coords0[2]);
-		//glVertex3d(coords1[0], coords1[1], coords1[2]);
-		//glVertex3d(coords3[0], coords3[1], coords3[2]);
-		//glEnd();
 	}
 }
 
