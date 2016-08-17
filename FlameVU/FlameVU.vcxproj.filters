@@ -34,6 +34,9 @@
     <Filter Include="easyar">
       <UniqueIdentifier>{dd0dc571-36bc-4e2a-ba38-f28f37df7088}</UniqueIdentifier>
     </Filter>
+    <Filter Include="color">
+      <UniqueIdentifier>{a9c24239-cc26-4bc8-a49a-63f9f17c3311}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_flamevu.cpp">
@@ -61,6 +64,13 @@
     <ClCompile Include="src\easyar\armanager.cpp">
       <Filter>easyar</Filter>
     </ClCompile>
+    <ClCompile Include="src\color\planckmapping.cpp">
+      <Filter>color</Filter>
+    </ClCompile>
+    <ClCompile Include="src\color\spectrum.cpp">
+      <Filter>color</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parameters.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="flamevu.ui">
@@ -80,15 +90,19 @@
     <ClInclude Include="GeneratedFiles\ui_flamevu.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\functions.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\easyar\armanager.h">
       <Filter>easyar</Filter>
     </ClInclude>
-    <ClInclude Include="src\macros.h">
-      <Filter>Generated Files</Filter>
+    <ClInclude Include="src\color\planckmapping.h">
+      <Filter>color</Filter>
     </ClInclude>
+    <ClInclude Include="src\color\spectrum.h">
+      <Filter>color</Filter>
+    </ClInclude>
+    <ClInclude Include="src\functions.h" />
+    <ClInclude Include="src\macros.h" />
+    <ClInclude Include="src\headers.h" />
+    <ClInclude Include="src\parameters.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\cu\volume_render_kernel.cu">

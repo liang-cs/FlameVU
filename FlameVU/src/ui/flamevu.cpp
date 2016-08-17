@@ -6,7 +6,6 @@ FlameVU::FlameVU(QWidget *parent)
 	: QMainWindow(parent)
 {
 	//ui.setupUi(this);
-	setFixedSize(640, 480);
 	scene_widget_ = new SceneWidget(this, true, qRgb(20, 20, 50));
 	setCentralWidget(scene_widget_);
 
